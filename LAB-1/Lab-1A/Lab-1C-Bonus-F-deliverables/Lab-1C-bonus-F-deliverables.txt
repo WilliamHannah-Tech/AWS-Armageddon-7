@@ -1,0 +1,681 @@
+A)  ~ $ aws logs start-query \
+>   --log-group-name "aws-waf-logs-aws-armageddon-7-webacl01" \
+>   --start-time $(date -d '15 minutes ago' +%s) \
+>   --end-time $(date +%s) \
+>   --query-string 'fields @timestamp, httpRequest.clientIp as clientIp | stats count() as hits by clientIp | sort hits desc | limit 25' \
+>   --region ap-northeast-1
+{
+    "queryId": "60c79cf1-7b4d-4d3c-816a-e7b61174eb21"
+}
+
+A2)   "queryLanguage": "CWLI",
+    "results": [
+        [
+            {
+                "field": "uri",
+                "value": "/"
+            },
+            {
+                "field": "hits",
+                "value": "4"
+            }
+        ],
+        [
+            {
+                "field": "uri",
+                "value": "/.env"
+            },
+            {
+                "field": "hits",
+                "value": "1"
+            }
+        ],
+        [
+            {
+                "field": "uri",
+                "value": "/favicon.ico"
+            },
+            {
+                "field": "hits",
+                "value": "1"
+            }
+        ]
+    ],
+    "statistics": {
+        "recordsMatched": 6.0,
+        "recordsScanned": 6.0,
+        "estimatedRecordsSkipped": 0.0,
+        "bytesScanned": 8682.0,
+        "estimatedBytesSkipped": 0.0,
+        "logGroupsScanned": 1.0
+},
+    "status": "Complete"
+}
+(END)
+
+
+A3)    "queryLanguage": "CWLI",
+    "results": [
+        [
+            {
+                "field": "uri",
+                "value": "/"
+            },
+            {
+                "field": "hits",
+                "value": "2"
+            }
+        ],
+        [
+            {
+                "field": "uri",
+                "value": "/geoserver/web/"
+            },
+            {
+                "field": "hits",
+                "value": "1"
+            }
+        ]
+    ],
+    "statistics": {
+        "recordsMatched": 3.0,
+        "recordsScanned": 3.0,
+        "estimatedRecordsSkipped": 0.0,
+        "bytesScanned": 4944.0,
+        "estimatedBytesSkipped": 0.0,
+        "logGroupsScanned": 1.0
+    },
+    "status": "Complete"
+}
+
+
+A4)   ~ $ START=$(( $(date -u +%s) - 900 )); END=$(date -u +%s); \
+> QID=$(aws logs start-query \
+>   --log-group-name "aws-waf-logs-aws-armageddon-7-webacl01" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, action, httpRequest.clientIp as clientIp, httpRequest.uri as uri | filter action = "BLOCK" | stats count(*) as blocks by clientIp, uri | sort blocks desc | limit 25' \
+>   --region ap-northeast-1 \
+>   --query queryId \
+>   --output text); \
+> sleep 2; \
+> aws logs get-query-results --query-id "$QID" --region ap-northeast-1
+{
+    "queryLanguage": "CWLI",
+    "results": [],
+    "statistics": {
+        "recordsMatched": 0.0,
+        "recordsScanned": 0.0,
+        "estimatedRecordsSkipped": 1.0,
+        "bytesScanned": 0.0,
+        "estimatedBytesSkipped": 1295.0,
+        "logGroupsScanned": 1.0
+    },
+    "status": "Complete"
+}
+
+
+A5)    ~ $ START=$(( $(date -u +%s) - 900 )); END=$(date -u +%s); \
+> QID=$(aws logs start-query \
+>   --log-group-name "aws-waf-logs-aws-armageddon-7-webacl01" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, action, terminatingRuleId, terminatingRuleType | filter action = "BLOCK" | stats count(*) as blocks by terminatingRuleId, terminatingRuleType | sort blocks desc | limit 25' \
+>   --region ap-northeast-1 \
+>   --query queryId \
+>   --output text); \
+> sleep 2; \
+> aws logs get-query-results --query-id "$QID" --region ap-northeast-1
+{
+    "queryLanguage": "CWLI",
+    "results": [],
+    "statistics": {
+        "recordsMatched": 0.0,
+        "recordsScanned": 0.0,
+        "estimatedRecordsSkipped": 1.0,
+        "bytesScanned": 0.0,
+        "estimatedBytesSkipped": 1295.0,
+        "logGroupsScanned": 1.0
+    },
+    "status": "Complete"
+}
+
+
+A6)    ~ $ aws logs get-query-results \
+>   --query-id "1da9bb82-e446-43a4-90e4-e6bcdc6fdbb1" \
+>   --region ap-northeast-1
+{
+    "queryLanguage": "CWLI",
+    "results": [],
+    "statistics": {
+        "recordsMatched": 0.0,
+        "recordsScanned": 0.0,
+        "estimatedRecordsSkipped": 1.0,
+        "bytesScanned": 0.0,
+        "estimatedBytesSkipped": 1077.0,
+        "logGroupsScanned": 1.0
+    },
+    "status": "Complete"
+}
+
+~ $ START=$(( $(date -u +%s) - 900 )); END=$(date -u +%s)
+~ $ aws logs start-query \
+>   --log-group-name "aws-waf-logs-aws-armageddon-7-webacl01" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, httpRequest.clientIp as clientIp, httpRequest.uri as uri | filter uri =~ /wp-login|xmlrpc|\.env|admin|phpmyadmin|\.git|login/ | stats count(*) as hits by clientIp, uri | sort hits desc | limit 50' \
+>   --region ap-northeast-1
+{
+    "queryId": "7d959cd4-10fc-403c-9c36-4218e6dba372"
+}
+
+
+A7)     ~ $ START=$(( $(date -u +%s) - 900 ))
+~ $ END=$(date -u +%s)
+~ $ 
+~ $ aws logs start-query \
+>   --log-group-name "aws-waf-logs-aws-armageddon-7-webacl01" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, httpRequest.clientIp as clientIp, httpRequest.uri as uri | filter uri =~ /wp-login|xmlrpc|\.env|admin|phpmyadmin|\.git|\/login|\/Login|\/ADMIN/ | stats count(*) as hits by clientIp, uri | sort hits desc | limit 50' \
+>   --region ap-northeast-1
+{
+    "queryId": "56df22e1-1550-46f5-a4a6-9bc7d8be656b"
+}
+~ $ aws logs get-query-results --query-id "56df22e1-1550-46f5-a4a6-9bc7d8be656b" --region ap-northeast-1
+{
+    "queryLanguage": "CWLI",
+    "results": [],
+    "statistics": {
+        "recordsMatched": 0.0,
+        "recordsScanned": 1.0,
+        "estimatedRecordsSkipped": 0.0,
+        "bytesScanned": 1303.0,
+        "estimatedBytesSkipped": 0.0,
+        "logGroupsScanned": 1.0
+    },
+    "status": "Complete"
+}
+
+
+A8)     ~ $ aws logs start-query \
+>   --log-group-name "aws-waf-logs-aws-armageddon-7-webacl01" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, httpRequest.country as country | stats count(*) as hits by country | sort hits desc | limit 25' \
+>   --region ap-northeast-1
+{
+    "queryId": "10718158-7ab9-4da6-baea-703b51d287d6"
+}
+~ $ aws logs get-query-results \
+>   --query-id "10718158-7ab9-4da6-baea-703b51d287d6" \
+>   --region ap-northeast-1
+{
+    "queryLanguage": "CWLI",
+    "results": [
+        [
+            {
+                "field": "country",
+                "value": "US"
+            },
+            {
+                "field": "hits",
+                "value": "1"
+            }
+        ]
+    ],
+    "statistics": {
+        "recordsMatched": 1.0,
+        "recordsScanned": 1.0,
+        "estimatedRecordsSkipped": 0.0,
+        "bytesScanned": 1303.0,
+        "estimatedBytesSkipped": 0.0,
+        "logGroupsScanned": 1.0
+    },
+    "status": "Complete"
+}
+
+
+B)   ~ $ START=$(( $(date -u +%s) - 900 ))
+~ $ END=$(date -u +%s)
+~ $ 
+~ $ aws logs start-query \
+>   --log-group-name "/aws/ec2/aws-armageddon-7-rds-app" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, @message | filter @message like /ERROR|Exception|Traceback|DB|timeout|refused/ | stats count(*) as errors by bin(1m) | sort @timestamp asc' \
+>   --region ap-northeast-1
+{
+    "queryId": "b519d249-a5f2-49ef-9345-9a9aa1cc68ff"
+}
+~ $ START=$(( $(date -u +%s) - 900 ))
+~ $ END=$(date -u +%s)
+~ $ 
+~ $ aws logs start-query \
+>   --log-group-name "/aws/ec2/aws-armageddon-7-rds-app" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, @message | filter @message like /DB|mysql|timeout|refused|Access denied|could not connect/ | sort @timestamp desc | limit 50' \
+>   --region ap-northeast-1
+{
+    "queryId": "17a27914-8e8f-4f50-861a-470ddc693782"
+}
+
+
+B1)        ~ $ START=$(( $(date -u +%s) - 900 ))
+~ $ END=$(date -u +%s)
+~ $ 
+~ $ aws logs start-query \
+>   --log-group-name "/aws/ec2/aws-armageddon-7-rds-app" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, @message | filter @message like /ERROR|Exception|Traceback|DB|timeout|refused/ | stats count(*) as errors by bin(1m) as t | sort t asc' \
+>   --region ap-northeast-1
+{
+    "queryId": "e53c76d6-eede-44f5-9aff-27f8d123f2ba"
+}
+~ $ aws logs get-query-results \
+>   --query-id "e53c76d6-eede-44f5-9aff-27f8d123f2ba" \
+>   --region ap-northeast-1
+{
+    "queryLanguage": "CWLI",
+    "results": [],
+    "statistics": {
+        "recordsMatched": 0.0,
+        "recordsScanned": 0.0,
+        "estimatedRecordsSkipped": 0.0,
+        "bytesScanned": 0.0,
+        "estimatedBytesSkipped": 0.0,
+        "logGroupsScanned": 1.0
+    },
+    "status": "Complete"
+}
+
+
+B2)     ~ $ START=$(( $(date -u +%s) - 900 ))
+~ $ END=$(date -u +%s)
+~ $ 
+~ $ aws logs start-query \
+>   --log-group-name "/aws/ec2/aws-armageddon-7-rds-app" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, @message | filter @message like /DB|mysql|timeout|refused|Access denied|could not connect/ | sort @timestamp desc | limit 50' \
+>   --region ap-northeast-1
+{
+    "queryId": "12ff9492-904f-45b7-98a0-d742376c8d2b"
+}
+~ $ aws logs get-query-results \
+>   --query-id "12ff9492-904f-45b7-98a0-d742376c8d2b" \
+>   --region ap-northeast-1
+{
+    "queryLanguage": "CWLI",
+    "results": [],
+    "statistics": {
+        "recordsMatched": 0.0,
+        "recordsScanned": 0.0,
+        "estimatedRecordsSkipped": 0.0,
+        "bytesScanned": 0.0,
+        "estimatedBytesSkipped": 0.0,
+        "logGroupsScanned": 1.0
+    },
+    "status": "Complete"
+}
+
+
+B3)    ~ $ START=$(( $(date -u +%s) - 900 ))
+~ $ END=$(date -u +%s)
+~ $ 
+~ $ aws logs start-query \
+>   --log-group-name "/aws/ec2/aws-armageddon-7-rds-app" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, @message | filter @message like /Access denied|access denied|authentication failed|Authentication failed/ | stats count(*) as hits' \
+>   --region ap-northeast-1
+{
+    "queryId": "ea1b1979-5ceb-4a38-9835-d0bea854a748"
+}
+~ $ aws logs start-query \
+>   --log-group-name "/aws/ec2/aws-armageddon-7-rds-app" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, @message | filter @message like /timeout|Timeout|no route|No route|could not connect|Could not connect/ | stats count(*) as hits' \
+>   --region ap-northeast-1
+{
+    "queryId": "0ab9baed-369b-4912-ac20-fbbcaa34f19d"
+}
+~ $ aws logs start-query \
+>   --log-group-name "/aws/ec2/aws-armageddon-7-rds-app" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, @message | filter @message like /refused|Refused/ | stats count(*) as hits' \
+>   --region ap-northeast-1
+{
+    "queryId": "080de16f-a762-430c-a303-ec93ff9afec2"
+}
+~ $ aws logs get-query-results --query-id "ea1b1979-5ceb-4a38-9835-d0bea854a748" --region ap-northeast-1
+{
+    "queryLanguage": "CWLI",
+    "results": [],
+    "statistics": {
+        "recordsMatched": 0.0,
+        "recordsScanned": 0.0,
+        "estimatedRecordsSkipped": 0.0,
+        "bytesScanned": 0.0,
+        "estimatedBytesSkipped": 0.0,
+        "logGroupsScanned": 1.0
+    },
+    "status": "Complete"
+}
+
+
+
+B4)      ~ $ START=$(( $(date -u +%s) - 900 ))
+~ $ END=$(date -u +%s)
+~ $ 
+~ $ aws logs start-query \
+>   --log-group-name "/aws/ec2/aws-armageddon-7-rds-app" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, level, event, reason | filter level = "ERROR" | stats count(*) as n by event, reason | sort n desc' \
+>   --region ap-northeast-1
+{
+    "queryId": "b0db71d3-f981-4c35-9069-49232c95957d"
+}
+~ $ aws logs get-query-results \
+>   --query-id "b0db71d3-f981-4c35-9069-49232c95957d" \
+>   --region ap-northeast-1
+{
+    "queryLanguage": "CWLI",
+    "results": [],
+    "statistics": {
+        "recordsMatched": 0.0,
+        "recordsScanned": 0.0,
+        "estimatedRecordsSkipped": 0.0,
+        "bytesScanned": 0.0,
+        "estimatedBytesSkipped": 0.0,
+        "logGroupsScanned": 1.0
+    },
+    "status": "Complete"
+}
+~ $ aws logs start-query \
+>   --log-group-name "/aws/ec2/aws-armageddon-7-rds-app" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, @message | parse @message "\"level\":\"*\"" as level | parse @message "\"event\":\"*\"" as event | parse @message "\"reason\":\"*\"" as reason | filter level = "ERROR" | stats count(*) as n by event, reason | sort n desc' \
+>   --region ap-northeast-1
+{
+    "queryId": "beeddde4-bc9f-4fa5-9f49-bbc2f7d964a8"
+}
+
+
+C)       
+Step 1----
+~ $ aws cloudwatch describe-alarms \
+>   --alarm-names "aws-armageddon-7-alb-5xx-alarm01" "aws-armageddon-7-db-connection-failure" \
+>   --region ap-northeast-1 \
+>   --query "MetricAlarms[].{Alarm:AlarmName,State:StateValue,Updated:StateUpdatedTimestamp,Reason:StateReason}" \
+>   --output table
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+|                                                                                                    DescribeAlarms                                                                                                    |
++----------------------------------------+-------------------------------------------------------------------------------------------------------------------+--------------------+------------------------------------+
+|                  Alarm                 |                                                      Reason                                                       |       State        |              Updated               |
++----------------------------------------+-------------------------------------------------------------------------------------------------------------------+--------------------+------------------------------------+
+|  aws-armageddon-7-alb-5xx-alarm01      |  Threshold Crossed: 1 datapoint [2.0 (10/02/26 01:32:00)] was not greater than or equal to the threshold (10.0).  |  OK                |  2026-02-10T01:39:07.958000+00:00  |
+|  aws-armageddon-7-db-connection-failure|  Unchecked: Initial alarm creation                                                                                |  INSUFFICIENT_DATA |  2026-02-07T07:58:21.238000+00:00  |
++----------------------------------------+-------------------------------------------------------------------------------------------------------------------+--------------------+------------------------------------+
+~ $ START=$(( $(date -u +%s) - 900 ))
+~ $ END=$(date -u +%s)
+~ $ 
+~ $ aws logs start-query \
+>   --log-group-name "/aws/ec2/aws-armageddon-7-rds-app" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, @message | filter @message like /ERROR|Exception|Traceback|DB|timeout|refused|Access denied|could not connect/ | stats count(*) as errors by bin(1m) as t | sort t asc' \
+>   --region ap-northeast-1
+{
+    "queryId": "a39e07c7-fa1e-41ac-a98f-223f4abdedbe"
+}
+~ $ aws logs get-query-results \
+>   --query-id "a39e07c7-fa1e-41ac-a98f-223f4abdedbe" \
+>   --region ap-northeast-1
+{
+    "queryLanguage": "CWLI",
+    "results": [],
+    "statistics": {
+        "recordsMatched": 0.0,
+        "recordsScanned": 0.0,
+        "estimatedRecordsSkipped": 0.0,
+        "bytesScanned": 0.0,
+        "estimatedBytesSkipped": 0.0,
+        "logGroupsScanned": 1.0
+    },
+    "status": "Complete"
+}
+
+
+Step 2---
+~ $ START=$(( $(date -u +%s) - 900 ))
+~ $ END=$(date -u +%s)
+~ $ 
+~ $ aws logs start-query \
+>   --log-group-name "aws-waf-logs-aws-armageddon-7-webacl01" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, action | stats count(*) as hits by action | sort hits desc' \
+>   --region ap-northeast-1
+{
+    "queryId": "7f2c02d6-98aa-4ea4-89c0-cfb87f12a22f"
+}
+~ $ aws logs get-query-results --query-id "7f2c02d6-98aa-4ea4-89c0-cfb87f12a22f" --region ap-northeast-1
+{
+    "queryLanguage": "CWLI",
+    "results": [
+        [
+            {
+                "field": "action",
+                "value": "BLOCK"
+            },
+            {
+                "field": "hits",
+                "value": "15"
+            }
+        ],
+        [
+            {
+                "field": "action",
+                "value": "ALLOW"
+            },
+            {
+                "field": "hits",
+                "value": "2"
+            }
+        ]
+    ],
+    "statistics": {
+        "recordsMatched": 17.0,
+        "recordsScanned": 17.0,
+        "estimatedRecordsSkipped": 0.0,
+        "bytesScanned": 23238.0,
+        "estimatedBytesSkipped": 0.0,
+        "logGroupsScanned": 1.0
+    },
+    "status": "Complete"
+}
+~ $ START=$(( $(date -u +%s) - 900 ))
+~ $ END=$(date -u +%s)
+~ $ 
+~ $ aws logs start-query \
+>   --log-group-name "aws-waf-logs-aws-armageddon-7-webacl01" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, action | filter action = "BLOCK" | stats count(*) as blocks by bin(1m) as t | sort t asc' \
+>   --region ap-northeast-1
+{
+    "queryId": "3fac8a3a-f86c-402a-8652-44564426ae5d"
+}
+~ $ aws logs get-query-results --query-id "3fac8a3a-f86c-402a-8652-44564426ae5d" --region ap-northeast-1
+{
+    "queryLanguage": "CWLI",
+    "results": [
+        [
+            {
+                "field": "t",
+                "value": "2026-02-10 02:10:00.000"
+            },
+            {
+                "field": "blocks",
+                "value": "15"
+            }
+        ]
+    ],
+    "statistics": {
+        "recordsMatched": 15.0,
+        "recordsScanned": 15.0,
+        "estimatedRecordsSkipped": 3.0,
+        "bytesScanned": 20659.0,
+        "estimatedBytesSkipped": 3828.0,
+        "logGroupsScanned": 1.0
+    },
+    "status": "Complete"
+}
+
+Step 3---
+~ $ START=$(( $(date -u +%s) - 900 ))
+~ $ END=$(date -u +%s)
+~ $ 
+~ $ aws logs start-query \
+>   --log-group-name "/aws/ec2/aws-armageddon-7-rds-app" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, @message | filter @message like /DB|mysql|timeout|refused|Access denied|could not connect/ | sort @timestamp desc | limit 50' \
+>   --region ap-northeast-1
+{
+    "queryId": "c5c4ebdf-c941-4c07-8eb1-fd5a89f90905"
+}
+~ $ aws logs get-query-results --query-id "c5c4ebdf-c941-4c07-8eb1-fd5a89f90905" --region ap-northeast-1
+{
+    "queryLanguage": "CWLI",
+    "results": [],
+    "statistics": {
+        "recordsMatched": 0.0,
+        "recordsScanned": 0.0,
+        "estimatedRecordsSkipped": 0.0,
+        "bytesScanned": 0.0,
+        "estimatedBytesSkipped": 0.0,
+        "logGroupsScanned": 1.0
+    },
+    "status": "Complete"
+}
+~ $ aws ssm get-parameters-by-path \
+>   --path "/lab/db" \
+>   --recursive \
+>   --with-decryption \
+>   --region ap-northeast-1 \
+>   --query "Parameters[].{Name:Name,Value:Value}" \
+>   --output table
+----------------------------------------------------------------------------------------------
+|                                     GetParametersByPath                                    |
++------------------+-------------------------------------------------------------------------+
+|       Name       |                                  Value                                  |
++------------------+-------------------------------------------------------------------------+
+|  /lab/db/endpoint|  aws-armageddon-7-rds01.cxg4kaewgt50.ap-northeast-1.rds.amazonaws.com   |
+|  /lab/db/name    |  database1                                                              |
+|  /lab/db/port    |  3306                                                                   |
++------------------+-------------------------------------------------------------------------+
+
+
+Step 4-- 
+~ $ START=$(( $(date -u +%s) - 900 ))
+~ $ END=$(date -u +%s)
+~ $ 
+~ $ aws logs start-query \
+>   --log-group-name "/aws/ec2/aws-armageddon-7-rds-app" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, @message | filter @message like /ERROR|Exception|Traceback|DB|timeout|refused|Access denied|could not connect/ | stats count(*) as errors by bin(1m) as t | sort t asc' \
+>   --region ap-northeast-1
+{
+    "queryId": "6a0358fa-a343-4fe6-8195-22d87606417c"
+}
+~ $ aws logs get-query-results --query-id "6a0358fa-a343-4fe6-8195-22d87606417c" --region ap-northeast-1
+{
+    "queryLanguage": "CWLI",
+    "results": [],
+    "statistics": {
+        "recordsMatched": 0.0,
+        "recordsScanned": 0.0,
+        "estimatedRecordsSkipped": 0.0,
+        "bytesScanned": 0.0,
+        "estimatedBytesSkipped": 0.0,
+        "logGroupsScanned": 1.0
+    },
+    "status": "Complete"
+}
+~ $ START=$(( $(date -u +%s) - 900 ))
+~ $ END=$(date -u +%s)
+~ $ 
+~ $ aws logs start-query \
+>   --log-group-name "aws-waf-logs-aws-armageddon-7-webacl01" \
+>   --start-time "$START" \
+>   --end-time "$END" \
+>   --query-string 'fields @timestamp, action | filter action = "BLOCK" | stats count(*) as blocks by bin(1m) as t | sort t asc' \
+>   --region ap-northeast-1
+{
+    "queryId": "6c7a1207-21c0-4a9d-bd50-8a40589a6ab2"
+}
+~ $ aws logs get-query-results --query-id "6c7a1207-21c0-4a9d-bd50-8a40589a6ab2" --region ap-northeast-1
+{
+    "queryLanguage": "CWLI",
+    "results": [],
+    "statistics": {
+        "recordsMatched": 0.0,
+        "recordsScanned": 0.0,
+        "estimatedRecordsSkipped": 1.0,
+        "bytesScanned": 0.0,
+        "estimatedBytesSkipped": 1305.0,
+        "logGroupsScanned": 1.0
+    },
+    "status": "Complete"
+}
+~ $ aws cloudwatch describe-alarms \
+>   --alarm-names "aws-armageddon-7-alb-5xx-alarm01" "aws-armageddon-7-db-connection-failure" \
+>   --region ap-northeast-1 \
+>   --query "MetricAlarms[].{Alarm:AlarmName,State:StateValue,Updated:StateUpdatedTimestamp,Reason:StateReason}" \
+>   --output table
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+|                                                                                                    DescribeAlarms                                                                                                    |
++----------------------------------------+-------------------------------------------------------------------------------------------------------------------+--------------------+------------------------------------+
+|                  Alarm                 |                                                      Reason                                                       |       State        |              Updated               |
++----------------------------------------+-------------------------------------------------------------------------------------------------------------------+--------------------+------------------------------------+
+|  aws-armageddon-7-alb-5xx-alarm01      |  Threshold Crossed: 1 datapoint [1.0 (10/02/26 02:33:00)] was not greater than or equal to the threshold (10.0).  |  OK                |  2026-02-10T02:40:07.960000+00:00  |
+|  aws-armageddon-7-db-connection-failure|  Unchecked: Initial alarm creation                                                                                |  INSUFFICIENT_DATA |  2026-02-07T07:58:21.238000+00:00  |
++----------------------------------------+-------------------------------------------------------------------------------------------------------------------+--------------------+------------------------------------+
+~ $ curl -skI https://app.hannahcorporation.net/list
+HTTP/2 404 
+date: Tue, 10 Feb 2026 02:44:46 GMT
+content-type: text/html
+content-length: 867
+set-cookie: request_id=3bd59cee-e1ad-44de-8a06-b85c2b64578e; Max-Age=3600; Path=/; HttpOnly
+last-modified: Fri, 10 Jan 2020 16:05:10 GMT
+accept-ranges: bytes
+age: 0
+x-request-id: 3bd59cee-e1ad-44de-8a06-b85c2b64578e
+
+~ $ curl -sk https://app.hannahcorporation.net/list | head -c 500
+<!DOCTYPE HTML>
+<html>
+
+    <head>
+        <title>404 Error - Page Not Found</title>
+        <style>
+            #ad_frame{ height:800px; width:100%; }
+            body{ margin:0; border: 0; padding: 0; }
+        </style>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <script type="text/javascript" language="JavaScript">
+            var url = 'http://www.searchvity.com/?dn='
+                + document.domain + '&pid=9POL6F2H4';
+
+
+
+

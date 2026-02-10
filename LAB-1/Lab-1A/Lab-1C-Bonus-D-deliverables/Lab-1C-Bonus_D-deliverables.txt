@@ -1,0 +1,116 @@
+Verify apex record exists aws route53 list-resource-record-sets
+
+aws route53 list-resource-record-sets \
+>   --hosted-zone-id Z08264442SVH6EKJIAV5V \
+>   --query "ResourceRecordSets[?Name=='hannahcorporation.net.']" \
+>   --output json
+[
+    {
+        "Name": "hannahcorporation.net.",
+        "Type": "A",
+        "AliasTarget": {
+            "HostedZoneId": "Z14GRHDCWA56QT",
+            "DNSName": "aws-armageddon-7-alb01-461213699.ap-northeast-1.elb.amazonaws.com.",
+            "EvaluateTargetHealth": true
+        }
+    },
+    {
+        "Name": "hannahcorporation.net.",
+        "Type": "NS",
+        "TTL": 172800,
+        "ResourceRecords": [
+            {
+                "Value": "ns-567.awsdns-06.net."
+            },
+            {
+                "Value": "ns-1732.awsdns-24.co.uk."
+            },
+            {
+                "Value": "ns-1299.awsdns-34.org."
+            },
+            {
+                "Value": "ns-421.awsdns-52.com."
+            }
+        ]
+    },
+    {
+        "Name": "hannahcorporation.net.",
+        "Type": "SOA",
+        "TTL": 900,
+        "ResourceRecords": [
+            {
+                "Value": "ns-567.awsdns-06.net. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400"
+            }
+        ]
+    }
+]
+~ $ aws elbv2 describe-load-balancers \
+>   --names aws-armageddon-7-alb01 \
+>   --query "LoadBalancers[0].LoadBalancerArn" \
+>   --output text \
+>   --region ap-northeast-1
+arn:aws:elasticloadbalancing:ap-northeast-1:771031500268:loadbalancer/app/aws-armageddon-7-alb01/4cca268cc6596578
+
+~ $ aws elbv2 describe-load-balancer-attributes \
+>   --load-balancer-arn arn:aws:elasticloadbalancing:ap-northeast-1:771031500268:loadbalancer/app/aws-armageddon-7-alb01/4cca268cc6596578 \
+>   --query "Attributes[?starts_with(Key, 'access_logs.s3')]" \
+>   --output table \
+>   --region ap-northeast-1
+----------------------------------------------------------------------
+|                   DescribeLoadBalancerAttributes                   |
++-------------------------+------------------------------------------+
+|           Key           |                  Value                   |
++-------------------------+------------------------------------------+
+|  access_logs.s3.enabled |  true                                    |
+|  access_logs.s3.bucket  |  aws-armageddon-7-alb-logs-771031500268  |
+|  access_logs.s3.prefix  |  alb-access-logs                         |
++-------------------------+------------------------------------------+
+
+~ $ aws elbv2 describe-load-balancer-attributes \
+>   --load-balancer-arn arn:aws:elasticloadbalancing:ap-northeast-1:771031500268:loadbalancer/app/aws-armageddon-7-alb01/4cca268cc6596578 \
+>   --query "Attributes[?starts_with(Key, 'access_logs.s3')]" \
+>   --output table \
+>   --region ap-northeast-1
+----------------------------------------------------------------------
+|                   DescribeLoadBalancerAttributes                   |
++-------------------------+------------------------------------------+
+|           Key           |                  Value                   |
++-------------------------+------------------------------------------+
+|  access_logs.s3.enabled |  true                                    |
+|  access_logs.s3.bucket  |  aws-armageddon-7-alb-logs-771031500268  |
+|  access_logs.s3.prefix  |  alb-access-logs                         |
++-------------------------+------------------------------------------+
+
+~ $ curl -I https://hannahcorporation.net
+HTTP/2 200 
+date: Mon, 09 Feb 2026 11:10:14 GMT
+content-type: text/html
+content-length: 1187
+set-cookie: request_id=4debcd85-1e55-42f5-a9df-9a904ab02c64; Max-Age=3600; Path=/; HttpOnly
+last-modified: Sat, 28 Aug 2021 03:42:09 GMT
+etag: "4a3-5ca966279c975"
+accept-ranges: bytes
+cache-control: max-age=3600
+expires: Mon, 09 Feb 2026 12:10:14 GMT
+vary: Accept-Encoding
+age: 0
+x-request-id: 4debcd85-1e55-42f5-a9df-9a904ab02c64
+
+~ $ curl -I https://app.hannahcorporation.net
+HTTP/2 200 
+date: Mon, 09 Feb 2026 11:12:15 GMT
+content-type: text/html
+content-length: 1187
+set-cookie: request_id=366d2891-097a-4842-a0b4-f4be58bfc982; Max-Age=3600; Path=/; HttpOnly
+last-modified: Sat, 28 Aug 2021 03:42:09 GMT
+etag: "4a3-5ca966279c975"
+accept-ranges: bytes
+cache-control: max-age=3600
+expires: Mon, 09 Feb 2026 12:12:15 GMT
+vary: Accept-Encoding
+age: 0
+x-request-id: 366d2891-097a-4842-a0b4-f4be58bfc982
+
+~ $ aws s3 ls s3://aws-armageddon-7-alb-logs-771031500268/alb-access-logs/AWSLogs/771031500268/elasticloadbalancing/ --recursive | head
+2026-02-09 11:05:05        442 alb-access-logs/AWSLogs/771031500268/elasticloadbalancing/ap-northeast-1/2026/02/09/771031500268_elasticloadbalancing_ap-northeast-1_app.aws-armageddon-7-alb01.4cca268cc6596578_20260209T1105Z_52.199.249.118_5nqmgzp5.log.gz
+2026-02-09 11:15:05        391 alb-access-logs/AWSLogs/771031500268/elasticloadbalancing/ap-northeast-1/2026/02/09/771031500268_elasticloadbalancing_ap-northeast-1_app.aws-armageddon-7-alb01.4cca268cc6596578_20260209T1115Z_52.199.223.50_go4y5z02.log.gz
